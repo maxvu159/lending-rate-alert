@@ -1,0 +1,67 @@
+{
+  "_note": "Copy to config.json and edit. Keys starting with _ are comments. Amounts are in units of the loan asset.",
+  "chain": {
+    "name": "HyperEVM",
+    "rpc": "https://rpc.hyperlend.finance/archive",
+    "_rpc_note": "Needs an archive RPC: 7-day yields read state from a block 7 days ago.",
+    "morpho_chain_id": 999,
+    "blocks_per_day": 88000,
+    "_blocks_note": "Rough guess used to find the block 7 days ago; yields are annualised with the real block timestamps."
+  },
+  "asset": {"symbol": "HYPE", "address": "0x5555555555555555555555555555555555555555", "decimals": 18},
+  "timezone_offset_hours": 7,
+  "font": "Inter",
+
+  "yields": {
+    "_note": "Reference yields that borrowing is compared against (usually the LST you loop). 7-day change of an exchange rate, annualised.",
+    "kHYPE": {"type": "exchange_rate", "contract": "0x9209648Ec9D448EF57116B73A2f081835643dc7A",
+              "signature": "kHYPEToHYPE(uint256)", "arg": "1000000000000000000"},
+    "stHYPE": {"type": "balance_ratio", "wallet": "0xBC05da14287317FE12B1a2b5a0E1d756Ff1801Aa",
+               "numerator": "0xfFaa4a3D97fE9107Cef8a3F48c069F577Ff76cC1",
+               "denominator": "0x94e8396e0869c9F2200760aF0621aFd240E1CF38",
+               "_note": "stHYPE per wstHYPE, read as the two balances of one wallet that holds both"}
+  },
+
+  "alerts": {
+    "spike_pts": 1.0,
+    "escalate_pts": 1.0,
+    "_note": "Alert when borrow rate >= 24h median + spike_pts, or > the reference yield for hold_min minutes. Re-alert when it rises another escalate_pts. 'Back to normal' when below the yield and below median + spike_pts/2."
+  },
+
+  "markets": [
+    {"key": "hyperlend", "name": "HyperLend WHYPE", "kind": "aave", "yield": "stHYPE", "hold_min": 30,
+     "atoken": "0x0d745eaa9e70bb8b6e2a0317f85f1d536616bd34",
+     "history": "hyperlend_api", "gauge_min": 60, "loop_collateral": ["kHYPE", "stHYPE"]},
+    {"key": "felix-khype", "name": "Felix kHYPE/WHYPE", "kind": "morpho", "yield": "kHYPE", "hold_min": 180,
+     "market": "0x64e7db7f042812d4335947a7cdf6af1093d29478aff5f1ccd93cc67f8aadfddc",
+     "_hold_note": "Morpho rates drift slowly around the target; this one sits near the kHYPE yield half the time, so a short hold spams."},
+    {"key": "felix-wsthype", "name": "Felix wstHYPE/WHYPE", "kind": "morpho", "yield": "stHYPE", "hold_min": 180,
+     "market": "0xbcae0d8e", "_market_note": "A prefix is enough; the full id is looked up in the Morpho API."},
+    {"key": "euler-prime", "name": "Euler Clearstar Prime (WHYPE)", "kind": "euler", "yield": "kHYPE", "hold_min": 30,
+     "vault": "0xF73c654d468f5485bF15F3470B78851a49257704"},
+    {"key": "euler-yield", "name": "Euler Clearstar Yield (WHYPE)", "kind": "euler", "yield": "kHYPE", "hold_min": 30,
+     "vault": "0xc7e7861352df6919e7152C007832C48A777f2a4c", "loop_collateral": ["kHYPE", "stHYPE"]}
+  ],
+
+  "digest": {
+    "_note": "Daily digest: top supply venues (7-day share-price APY after fees) and top loops (profit per year at the best size).",
+    "supply_vaults": [
+      {"name": "Felix HYPE v1", "protocol": "Morpho", "vault": "0x2900ABd73631b2f60747e687095537B673c06A76"},
+      {"name": "Felix HYPE v2", "protocol": "Morpho", "vault": "0xbd3163135ca16c088b92b000ebc8c20a449c349e"},
+      {"name": "MEV Capital HYPE", "protocol": "Morpho", "vault": "0xd19e3d00f8547f7d108abFD4bbb015486437B487"},
+      {"name": "Gauntlet WHYPE", "protocol": "Morpho", "vault": "0x264a06Fd7A7C9E0Bfe75163b475E2A3cc1856578"},
+      {"name": "Clearstar Prime", "protocol": "Euler", "vault": "0xF73c654d468f5485bF15F3470B78851a49257704"},
+      {"name": "Clearstar Yield", "protocol": "Euler", "vault": "0xc7e7861352df6919e7152C007832C48A777f2a4c"}
+    ],
+    "extra_loops": [
+      {"name": "Morpho", "kind": "morpho", "market": "0xe9a9bb9e", "collateral": "stHYPE"}
+    ],
+    "min_tvl": 1000,
+    "best_min_tvl": 5000,
+    "safe_min_tvl": 50000,
+    "safe_min_withdrawable": 20000
+  },
+
+  "telegram": {"chat_id": "", "thread_id": "",
+               "_note": "Bot token comes from env TELEGRAM_BOT_TOKEN only. chat_id/thread_id here or in env TELEGRAM_CHAT_ID / TELEGRAM_THREAD_ID."}
+}

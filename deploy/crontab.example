@@ -1,0 +1,5 @@
+# crontab -e   (times are the machine's local time)
+# Borrow rate alert every 10 minutes
+*/10 * * * * /path/to/lending-rate-alert/deploy/run.sh alert >> /path/to/lending-rate-alert/data/alert.log 2>&1
+# Daily digest at 08:00
+0 8 * * * /path/to/lending-rate-alert/deploy/run.sh digest >> /path/to/lending-rate-alert/data/digest.log 2>&1
